@@ -18,7 +18,9 @@ builder.WebHost.ConfigureKestrel((options) => {
 // For instructions on how to configure Kestrel and gRPC clients on macOS, visit https://go.microsoft.com/fwlink/?linkid=2099682
 
 // Add services to the container.
-builder.Services.AddGrpc().AddJsonTranscoding((o) => {
+builder.Services.AddGrpc((o) => {
+    o.Interceptors.Add<StreamingInterceptor>();
+}).AddJsonTranscoding((o) => {
     
 });
 builder.Services.AddGrpcSwagger();

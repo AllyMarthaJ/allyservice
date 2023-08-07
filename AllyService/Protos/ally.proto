@@ -8,7 +8,7 @@ package ally;
 
 service Ally {
   // Says hello, but uses the Greeter Service to provide an input so you don't have to.
-  rpc SayHello (AllyRequest) returns (AllyReply) {
+  rpc SayHello (AllyRequest) returns (AllyResponse) {
     option (google.api.http) = {
       get: "/v1/ally"
     };
@@ -22,7 +22,7 @@ service Ally {
 }
 
 message HelloEvent {
-  AllyReply reply = 1;
+  AllyResponse reply = 1;
 }
 
 message HelloSubscription { 
@@ -33,6 +33,6 @@ message HelloSubscription {
 message AllyRequest { }
 
 // We'll give you a message, just maybe not the one you wanted to hear.
-message AllyReply {
+message AllyResponse {
   string message = 1;
 }

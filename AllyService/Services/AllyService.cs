@@ -23,14 +23,14 @@ public class AllyService : Ally.AllyBase {
         this._helloEventFactory = helloEventFactory;
     }
 
-    public override async Task<AllyReply> SayHello(AllyRequest request, ServerCallContext context) {
+    public override async Task<AllyResponse> SayHello(AllyRequest request, ServerCallContext context) {
         var greeterResponse = await this._gClient.InvokeHelloAsync(
             new HelloRequest() {
                 Name = "gay"
             }
         );
 
-        var reply = new AllyReply() {
+        var reply = new AllyResponse() {
             Message = greeterResponse.Message
         };
 
