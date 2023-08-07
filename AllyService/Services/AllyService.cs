@@ -5,17 +5,22 @@ using Grpc.Core;
 namespace AllyService.Services;
 
 public class AllyService : Ally.AllyBase {
+    // Logger
     private readonly ILogger<AllyService> _logger;
+    
+    // RPC clients
     private readonly Greeter.GreeterClient _gClient;
     private readonly Ally.AllyClient _aClient;
-    private readonly EventFactory<HelloEvent> _allyEventPool;
+    
+    // Events
+    private readonly EventFactory<HelloEvent> _helloEventFactory;
 
     public AllyService(ILogger<AllyService> logger, Greeter.GreeterClient gClient, Ally.AllyClient aClient,
-        EventFactory<HelloEvent> allyEventPool) {
+        EventFactory<HelloEvent> helloEventFactory) {
         this._logger = logger;
         this._gClient = gClient;
         this._aClient = aClient;
-        this._allyEventPool = allyEventPool;
+        this._helloEventFactory = helloEventFactory;
     }
 
     public override async Task<AllyReply> SayHello(AllyRequest request, ServerCallContext context) {
@@ -29,15 +34,15 @@ public class AllyService : Ally.AllyBase {
             Message = greeterResponse.Message
         };
 
-        this._allyEventPool.Trigger(new HelloEvent() { Reply = reply });
+        await this._helloEventFactory.Trigger(new HelloEvent() { Reply = reply });
 
         return reply;
     }
 
-    public override async Task SubscribeToRandomMessages(Empty _, IServerStreamWriter<SubscribeResponse> responseStream,
+    public override async Task Subscribe(Empty _, IServerStreamWriter<HelloSubscription> responseStream,
         ServerCallContext context) {
-        this._allyEventPool.Subscribe("global-ident", async (ev) => {
-            await responseStream.WriteAsync(new SubscribeResponse()
+        this._helloEventFactory.Subscribe("global-ident", async (ev) => {
+            await responseStream.WriteAsync(new HelloSubscription()
                 { Message = $"Received message; {ev.Reply.Message}" });
         });
 
@@ -45,6 +50,6 @@ public class AllyService : Ally.AllyBase {
             await Task.Delay(500);
         }
         
-        this._allyEventPool.Unsubscribe("global-ident");
+        this._helloEventFactory.Unsubscribe("global-ident");
     }
 }

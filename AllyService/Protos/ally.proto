@@ -14,7 +14,7 @@ service Ally {
     };
   }
   
-  rpc SubscribeToRandomMessages(google.protobuf.Empty) returns (stream SubscribeResponse) {
+  rpc Subscribe(google.protobuf.Empty) returns (stream HelloSubscription) {
     option (google.api.http) = {
       get: "/v1/ally/subscribe"
     };
@@ -25,7 +25,7 @@ message HelloEvent {
   AllyReply reply = 1;
 }
 
-message SubscribeResponse { 
+message HelloSubscription { 
     string message = 1;
 }
 
