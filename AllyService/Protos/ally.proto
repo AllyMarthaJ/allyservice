@@ -1,0 +1,23 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "AllyService";
+import "google/api/annotations.proto";
+
+package ally;
+
+service Ally {
+  // Says hello, but uses the Greeter Service to provide an input so you don't have to.
+  rpc SayHello (AllyRequest) returns (AllyReply) {
+    option (google.api.http) = {
+      get: "/v1/ally"
+    };
+  }
+}
+
+// An Empty request that you don't have to work with.
+message AllyRequest { }
+
+// We'll give you a message, just maybe not the one you wanted to hear.
+message AllyReply {
+  string message = 1;
+}
