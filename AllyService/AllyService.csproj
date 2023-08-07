@@ -16,6 +16,7 @@
         <PackageReference Include="Grpc.AspNetCore" Version="2.49.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" Version="7.0.9" />
         <PackageReference Include="Microsoft.AspNetCore.Grpc.Swagger" Version="0.3.9" />
+        <PackageReference Include="System.ComponentModel.Composition" Version="8.0.0-preview.6.23329.7" />
     </ItemGroup>
 
     <ItemGroup>
@@ -23,6 +24,7 @@
         <Link>.dockerignore</Link>
       </Content>
     </ItemGroup>
+
 
     <PropertyGroup>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>

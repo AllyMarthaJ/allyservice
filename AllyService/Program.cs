@@ -2,6 +2,7 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using AllyService;
+using AllyService.Events;
 using AllyService.Services;
 using Grpc.Core;
 using Grpc.Net.ClientFactory;
@@ -37,6 +38,7 @@ Action<GrpcClientFactoryOptions> factoryClientOptions =
 
 builder.Services.AddGrpcClient<Greeter.GreeterClient>(factoryClientOptions);
 builder.Services.AddGrpcClient<Ally.AllyClient>(factoryClientOptions);
+builder.Services.AddSingleton<EventFactory<HelloEvent>>();
 
 var app = builder.Build();
 app.UseSwagger();

@@ -2,6 +2,7 @@
 
 option csharp_namespace = "AllyService";
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 
 package ally;
 
@@ -12,6 +13,20 @@ service Ally {
       get: "/v1/ally"
     };
   }
+  
+  rpc SubscribeToRandomMessages(google.protobuf.Empty) returns (stream SubscribeResponse) {
+    option (google.api.http) = {
+      get: "/v1/ally/subscribe"
+    };
+  }
+}
+
+message HelloEvent {
+  AllyReply reply = 1;
+}
+
+message SubscribeResponse { 
+    string message = 1;
 }
 
 // An Empty request that you don't have to work with.
