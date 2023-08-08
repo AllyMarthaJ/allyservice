@@ -31,6 +31,8 @@ Action<GrpcClientFactoryOptions> factoryClientOptions =
 
 builder.Services.AddGrpcClient<Greeter.GreeterClient>(factoryClientOptions);
 builder.Services.AddGrpcClient<Ally.AllyClient>(factoryClientOptions);
+
+builder.Services.AddSingleton<SubscriptionManager>();
 builder.Services.AddSingleton<EventFactory<HelloEvent>>();
 
 builder.Services.AddControllers();
@@ -46,6 +48,7 @@ builder.Services.AddCors((options) =>
 );
 
 var app = builder.Build();
+
 app.UseSwagger();
 app.UseSwaggerUI(opts => {
     opts.SwaggerEndpoint(
@@ -57,6 +60,7 @@ app.UseSwaggerUI(opts => {
 // Configure the HTTP request pipeline.
 app.MapGrpcService<GreeterService>();
 app.MapGrpcService<AllyService.Services.AllyService>();
+app.MapGrpcService<EventSubscriptionService>();
 app.UseRouting();
 app.UseCors("corsPolicy");
 app.UseEndpoints(endpoints => {

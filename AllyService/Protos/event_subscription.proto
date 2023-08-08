@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+option csharp_namespace = "AllyService";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+package events;
+
+service Subscription {
+  // Subscribe to SSE, giving all requested events
+  rpc Subscribe (SubscriptionRequest) returns (SubscriptionResponse) {
+    option (google.api.http) = {
+      post: "/v1/subscribe",
+      body: "*"
+    };
+  }
+}
+
+message SubscriptionType {
+  message HelloSubscription {}
+  
+  oneof Type {
+    HelloSubscription hello_subscription = 1;
+  }
+}
+
+message SubscriptionRequest {
+  repeated SubscriptionType subscriptions = 1;
+}
+
+message SubscriptionResponse {
+  string client_subscription_id = 1;
+  repeated SubscriptionType subscriptions = 2;
+}

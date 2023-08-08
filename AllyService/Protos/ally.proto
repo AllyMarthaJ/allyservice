@@ -19,10 +19,6 @@ message HelloEvent {
   AllyResponse reply = 1;
 }
 
-message HelloSubscription { 
-    string message = 1;
-}
-
 // An Empty request that you don't have to work with.
 message AllyRequest { }
 
