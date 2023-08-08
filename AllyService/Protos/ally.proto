@@ -13,12 +13,6 @@ service Ally {
       get: "/v1/ally"
     };
   }
-  
-  rpc Subscribe(google.protobuf.Empty) returns (stream HelloSubscription) {
-    option (google.api.http) = {
-      get: "/v1/ally/subscribe"
-    };
-  }
 }
 
 message HelloEvent {

@@ -1,14 +1,13 @@
 using Grpc.Core;
-using AllyService;
 
 namespace AllyService.Services;
 
 public class GreeterService : Greeter.GreeterBase {
-    private readonly ILogger<GreeterService> _logger;
+    private readonly ILogger<GreeterService> logger;
     private readonly Greeter.GreeterClient selfClient;
 
     public GreeterService(ILogger<GreeterService> logger, Greeter.GreeterClient client) {
-        this._logger = logger;
+        this.logger = logger;
         this.selfClient = client;
     }
 
