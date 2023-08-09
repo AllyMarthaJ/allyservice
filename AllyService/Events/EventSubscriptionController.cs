@@ -2,7 +2,7 @@ using System.Text.Json;
 using AllyService.Events;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AllyService.Services; 
+namespace AllyService.Events; 
 
 public class EventSubscriptionController : Controller {
     private readonly EventFactory<HelloEvent> helloEventFactory;
@@ -19,30 +19,24 @@ public class EventSubscriptionController : Controller {
     // gRPC route because JSON transcoding is, well, JSON, not an
     // event stream.
     [HttpGet("/v1/sse")]
-    public async Task<JsonResult> Listen(
+    public async Task<IActionResult> Listen(
         [FromQuery(Name = "id")] string? clientSubscriptionId, 
         CancellationToken cancellationToken
     ) {
         if (clientSubscriptionId == null) {
-            return new JsonResult("clientSubscriptionId was not provided.") {
-                StatusCode = 400
-            };
+            return this.BadRequest("clientSubscriptionId was not provided");
         }
-        // TODO: Verify clientSubscriptionId belongs to the authenticated
+        
+        // TODO: Verify clientSubscriptionId claim belongs to the authenticated
         // principal.
         var hasSubscription = this.manager.Subscriptions.TryGetValue(clientSubscriptionId, out var subscriptions) && 
                               subscriptions.Count > 0;
         if (!hasSubscription) {
-            return new JsonResult("No subscriptions found for provided clientSubscriptionId.") {
-                StatusCode = 400
-            };
+            return this.BadRequest("No subscriptions found for provided clientSubscriptionId");
         }
         
-        // Before ever sending content back, let's first set the headers.
-        // This ensures no one prematurely closes the connection 
-        // because oH nO iT'S nOt aN eVEnT sTReAM
-        this.Response.Headers.Add("Content-Type", "text/event-stream");
-        this.Response.Headers.Add("Cache-Control", "no-cache");
+        this.Response.Headers.TryAdd("Content-Type", "text/event-stream");
+        this.Response.Headers.TryAdd("Cache-Control", "no-cache");
 
         foreach (var subscription in subscriptions!) {
             switch (subscription.Name) {
@@ -54,14 +48,14 @@ public class EventSubscriptionController : Controller {
                     break;
             }
         }
-
+        
         do {
             hasSubscription = this.manager.Subscriptions.ContainsKey(clientSubscriptionId) && 
                               this.manager.Subscriptions[clientSubscriptionId].Count > 0;
-            
-            await Task.Delay(500, cancellationToken);
+            await Task.Delay(10, CancellationToken.None);
         } while (!cancellationToken.IsCancellationRequested && hasSubscription);
         
+        // Purge the subscriptions.
         foreach (var subscription in subscriptions!) {
             switch (subscription.Name) {
                 case "HelloEvent":
@@ -69,10 +63,13 @@ public class EventSubscriptionController : Controller {
                     break;
             }
         }
-        
-        this.logger.LogInformation("Subscriber {0} unsubscribed from SSE", clientSubscriptionId);
 
-        return new JsonResult("Success") { StatusCode = 200 };
+        this.manager.Subscriptions.Remove(clientSubscriptionId);
+        
+        this.logger.LogInformation("Closing SSE request for client {clientSubscriptionId}",
+            clientSubscriptionId);
+
+        return new EmptyResult();
     }
     
     private async Task onEvent<T>(T ev, EventFactory<T> factory, string id) {
@@ -84,14 +81,17 @@ public class EventSubscriptionController : Controller {
             await this.Response.WriteAsync("data:" + JsonSerializer.Serialize(ev) + "\n\n");
             await this.Response.Body.FlushAsync();
         }
-        catch (OperationCanceledException ex) {
+        catch (Exception ex) {
             // The next failed event should unsubscribe itself.
             factory.Unsubscribe(id);
+            
             // We should attempt to remove this from the client's subscribed
             // events as well.
             if (this.manager.Subscriptions.TryGetValue(id, out var subscription)) {
                 subscription.Remove(typeof(T));
             }
+            
+            this.logger.LogInformation("Client {id} closed SSE connection", id);
         }
     }
 }
